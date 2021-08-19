@@ -9,7 +9,34 @@ void read_data(char *filename, char *buffer, int num){
 	fclose(fh);
 }
 
-
+// shin
+__global__ void construct_bwt(char* T, char* BWT, int* SA, int n) {
+	int idx = blockIdx.x * blockDim.x + threadIdx.x;
+	if (idx >= n) return;
+	BWT[idx] = SA[idx] == 0 ? 'A' : T[SA[idx] - 1];
+}
+// shin
+void bwt(char *data, thrust::device_vector<int>& d_SA, int n) {
+	thrust::device_vector<char> d_T(data, data + n + 1);
+	thrust::device_vector<char> d_BWT(n + 1);
+	char *pd_T = thrust::raw_pointer_cast(&d_T[0]);
+	char *pd_BWT = thrust::raw_pointer_cast(&d_BWT[0]);
+	int *pd_SA = thrust::raw_pointer_cast(&d_SA[0]);
+    dim3 block(8, 1);
+    dim3 grid((n + block.x - 1) / block.x, 1);
+	construct_bwt<<<grid, block>>>(pd_T, pd_BWT, pd_SA, n);
+	thrust::host_vector<char> h_BWT = d_BWT;
+	printf("T: %s\n", data);
+	printf("SA:\n");
+	for (i = 0; i < n; i++) {
+		printf("%d ", h_SA[i]);
+	}
+	printf("\nBWT:\n");
+	for (i = 0; i < n; i++) {
+		printf("%c", h_BWT[i]);
+	}
+	putchar('\n');
+}
 
 int main(int argc, char* argv[])
 {
@@ -33,6 +60,8 @@ int main(int argc, char* argv[])
 	data = (char *)malloc((n + 1)*sizeof(char));
 
 	read_data(filename, data, n);				//read data set from the local file
+
+	data[n - 1] = 'A';	// shin
 
 	thrust::host_vector<int> h_inp(n + 3);
 	thrust::host_vector<int> h_SA(n + 3, 0);
@@ -58,6 +87,8 @@ int main(int argc, char* argv[])
 	cudaEventElapsedTime(&milliseconds, start, stop);
 
 	printf("GPU construct Suffix Array\nNUM: %d \t Time: %f Sec\n", n, milliseconds / 1000);
+
+	bwt(data, d_SA, n);  // shin
 
 	cudaEventDestroy(start);
 	cudaEventDestroy(stop);
