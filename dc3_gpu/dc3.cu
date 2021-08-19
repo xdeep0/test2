@@ -16,7 +16,7 @@ __global__ void construct_bwt(char* T, char* BWT, int* SA, int n) {
 	BWT[idx] = SA[idx] == 0 ? 'A' : T[SA[idx] - 1];
 }
 // shin
-void bwt(char *data, thrust::device_vector<int>& d_SA, int n) {
+void bwt(char *data, thrust::host_vector<int>& h_SA, thrust::device_vector<int>& d_SA, int n) {
 	thrust::device_vector<char> d_T(data, data + n + 1);
 	thrust::device_vector<char> d_BWT(n + 1);
 	char *pd_T = thrust::raw_pointer_cast(&d_T[0]);
@@ -28,11 +28,11 @@ void bwt(char *data, thrust::device_vector<int>& d_SA, int n) {
 	thrust::host_vector<char> h_BWT = d_BWT;
 	printf("T: %s\n", data);
 	printf("SA:\n");
-	for (i = 0; i < n; i++) {
+	for (int i = 0; i < n; i++) {
 		printf("%d ", h_SA[i]);
 	}
 	printf("\nBWT:\n");
-	for (i = 0; i < n; i++) {
+	for (int i = 0; i < n; i++) {
 		printf("%c", h_BWT[i]);
 	}
 	putchar('\n');
@@ -88,7 +88,7 @@ int main(int argc, char* argv[])
 
 	printf("GPU construct Suffix Array\nNUM: %d \t Time: %f Sec\n", n, milliseconds / 1000);
 
-	bwt(data, d_SA, n);  // shin
+	bwt(data, h_SA, d_SA, n);  // shin
 
 	cudaEventDestroy(start);
 	cudaEventDestroy(stop);
