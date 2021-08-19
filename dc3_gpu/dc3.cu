@@ -67,6 +67,7 @@ int main(int argc, char* argv[])
 	printf("GPU construct Suffix Array\nNUM: %d \t Time: %f Sec\n", n, milliseconds / 1000);
 
 	// shin bwt parallel ---------------------------
+	puts("aaaaa");
 	thrust::device_vector<char> d_T(data, data + n + 1);
 	thrust::device_vector<char> d_BWT(n + 1);
 	char *pd_T = thrust::raw_pointer_cast(&d_T[0]);
